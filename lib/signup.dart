@@ -2,6 +2,8 @@ import 'package:cart_app/routes/app_route_constants.dart';
 import 'package:flutter/material.dart';
 import 'routes/app_route_configuration.dart';
 import 'package:go_router/go_router.dart';
+import 'widget/custom_text_field.dart';
+import 'widget/custom_button.dart';
 
 class Signup extends StatefulWidget {
   const Signup({super.key});
@@ -53,18 +55,11 @@ class _SignupState extends State<Signup> {
                   const SizedBox(height: 32),
 
                   // Username Field
-                  TextFormField(
+                  CustomTextField(
                     controller: _usernameController,
-                    decoration: InputDecoration(
-                      labelText: 'Username',
-                      hintText: 'Your name',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.black),
-                      ),
-                    ),
+                    label: 'user name',
+                    hint: 'your name',
+
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter username';
@@ -75,19 +70,10 @@ class _SignupState extends State<Signup> {
                   const SizedBox(height: 16),
 
                   // Email Field
-                  TextFormField(
+                  CustomTextField(
                     controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      hintText: 'example@mail.com',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.black),
-                      ),
-                    ),
+                    label: 'email',
+                    hint: 'abc@gmail.com',
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter email';
@@ -101,29 +87,23 @@ class _SignupState extends State<Signup> {
                   const SizedBox(height: 16),
 
                   // Password Field
-                  TextFormField(
+                  CustomTextField(
                     controller: _passwordController,
                     obscureText: obscureText,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      hintText: 'Your password',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.black),
+                    label: 'password',
+                    hint: 'acfgssdj',
+
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscureText ? Icons.visibility_off : Icons.visibility,
                       ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          obscureText ? Icons.visibility_off : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            obscureText = !obscureText;
-                          });
-                        },
-                      ),
+                      onPressed: () {
+                        setState(() {
+                          obscureText = !obscureText;
+                        });
+                      },
                     ),
+
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter password';
@@ -137,20 +117,7 @@ class _SignupState extends State<Signup> {
                   const SizedBox(height: 24),
 
                   // Submit Button
-                  ElevatedButton(
-                    onPressed: _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF5A78F0),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'Continue',
-                      style: TextStyle(fontSize: 18, color: Colors.white),
-                    ),
-                  ),
+                  CustomButton(text: 'Continue', onPressed: _submit),
                   Padding(
                     padding: EdgeInsets.only(bottom: 100),
                     child: Row(

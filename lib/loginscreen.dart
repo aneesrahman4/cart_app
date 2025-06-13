@@ -1,4 +1,6 @@
 import 'package:cart_app/routes/app_route_constants.dart';
+import 'package:cart_app/widget/custom_button.dart';
+import 'package:cart_app/widget/custom_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -53,18 +55,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 32),
 
                   // Email
-                  TextFormField(
+                  CustomTextField(
                     controller: _emailController,
-                    decoration: InputDecoration(
-                      labelText: 'Your Email',
-                      hintText: 'contact@dscodetech.com',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.black, width: 2),
-                      ),
-                    ),
+                    label: 'email',
+                    hint: 'abc@gmail.com',
                     validator:
                         (value) =>
                             (value == null || value.isEmpty)
@@ -74,30 +68,21 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 16),
 
                   // Password
-                  TextFormField(
+                  CustomTextField(
                     controller: _passwordController,
-                    obscureText: _obscureText,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      filled: true,
-                      fillColor: Colors.white70,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.black, width: 2),
+                    label: 'password',
+                    hint: 'abc123',
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureText ? Icons.visibility_off : Icons.visibility,
+                        color: Color(0xFFC4C4C4),
                       ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureText
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: Color(0xFFC4C4C4),
-                        ),
-                        onPressed:
-                            () => setState(() {
-                              _obscureText = !_obscureText;
-                            }),
-                      ),
+                      onPressed:
+                          () => setState(() {
+                            _obscureText = !_obscureText;
+                          }),
                     ),
+
                     validator:
                         (value) =>
                             (value == null || value.isEmpty)
@@ -107,22 +92,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 24),
 
                   // Continue Button
-                  SizedBox(
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: _submit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF5A78F0),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Continue',
-                        style: TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
-                  ),
+                  SizedBox(height: 50),
+                  CustomButton(onPressed: _submit, text: 'Continue'),
+
                   const SizedBox(height: 16),
 
                   // Sign up link
