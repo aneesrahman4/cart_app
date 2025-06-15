@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:cart_app/product_details.dart';
+import 'package:cart_app/product_screen.dart';
 import 'package:go_router/go_router.dart';
 import 'app_route_constants.dart';
 import 'package:cart_app/LoginScreen.dart';
@@ -17,6 +18,22 @@ class MyRouterApp {
         name: AppRouteConstants.SignupRouteName,
         path: '/signup',
         builder: (context, state) => const Signup(),
+      ),
+      GoRoute(
+        name: AppRouteConstants.ProductsRouteName,
+
+        path: '/Products',
+        builder: (context, state) => const Product(),
+      ),
+
+      GoRoute(
+        name: AppRouteConstants.ProductDetailRouteName,
+        path: '/product/:name/:price',
+        builder: (context, state) {
+          final name = state.pathParameters['name']!;
+          final price = state.pathParameters['price']!;
+          return ProductDetails(name: name, price: price);
+        },
       ),
     ],
   );

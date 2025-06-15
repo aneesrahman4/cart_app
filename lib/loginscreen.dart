@@ -18,16 +18,17 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscureText = true;
 
   void _submit() {
-    if (_formKey.currentState!.validate()) {
-      final email = _emailController.text.trim();
-      final password = _passwordController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
 
-      print("Email: $email, Password: $password");
+    print("Email: $email, Password: $password");
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Logging in...")));
-    }
+    // Skip validation and directly go to Product screen
+    context.goNamed(AppRouteConstants.ProductsRouteName);
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Logging in...")));
   }
 
   @override
