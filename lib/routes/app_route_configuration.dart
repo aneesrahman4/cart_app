@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'app_route_constants.dart';
 import 'package:cart_app/LoginScreen.dart';
 import 'package:cart_app/signup.dart';
+import 'package:cart_app/cart_screen.dart';
 
 class MyRouterApp {
   static final GoRouter router = GoRouter(
@@ -34,6 +35,11 @@ class MyRouterApp {
           final price = state.pathParameters['price']!;
           return ProductDetails(name: name, price: price);
         },
+      ),
+      GoRoute(
+        name: AppRouteConstants.CartRouteName,
+        path: '/cart',
+        builder: (context, state) => const CartScreen(),
       ),
     ],
   );

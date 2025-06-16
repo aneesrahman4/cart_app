@@ -5,6 +5,7 @@ import 'package:cart_app/routes/app_route_constants.dart';
 class Product extends StatelessWidget {
   const Product({super.key});
 
+  // Sample product list
   final List<Map<String, dynamic>> products = const [
     {'name': 'iPhone', 'price': '50000'},
     {'name': 'iPhone', 'price': '50000'},
@@ -16,6 +17,7 @@ class Product extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -26,13 +28,16 @@ class Product extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 20.0),
-            child: Icon(Icons.shopping_cart, color: Color(0xFF5A78F0)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.shopping_cart, color: Color(0xFF5A78F0)),
+            onPressed: () {
+              context.pushNamed(AppRouteConstants.CartRouteName);
+            },
           ),
         ],
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(12),
         child: GridView.builder(
@@ -45,6 +50,7 @@ class Product extends StatelessWidget {
           ),
           itemBuilder: (context, index) {
             final product = products[index];
+
             return GestureDetector(
               onTap: () {
                 context.pushNamed(
@@ -86,10 +92,10 @@ class Product extends StatelessWidget {
                     const SizedBox(height: 4),
                     OutlinedButton(
                       onPressed: () {
-                        // Add to cart logic
+                        // TODO: Add to cart logic here
                       },
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Color(0xFF5A78F0),
+                        foregroundColor: const Color(0xFF5A78F0),
                       ),
                       child: const Text('Add to cart'),
                     ),
