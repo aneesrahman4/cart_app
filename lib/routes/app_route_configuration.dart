@@ -22,11 +22,9 @@ class MyRouterApp {
       ),
       GoRoute(
         name: AppRouteConstants.ProductsRouteName,
-
         path: '/Products',
-        builder: (context, state) => const Product(),
+        builder: (context, state) => const ProductScreen(), // ✅ Fixed name
       ),
-
       GoRoute(
         name: AppRouteConstants.ProductDetailRouteName,
         path: '/product/:name/:price',

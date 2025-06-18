@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cart_app/routes/app_route_constants.dart';
-import 'product_model/product_ model.dart';
-import 'services/api_services.dart';
+import 'package:provider/provider.dart';
+import '../routes/app_route_constants.dart';
+import 'package:cart_app/product_model/product_ model.dart';
+import '../providers/product_providers.dart';
 
-class Product extends StatefulWidget {
-  const Product({super.key});
+class ProductScreen extends StatefulWidget {
+  const ProductScreen({super.key});
 
   @override
-  State<Product> createState() => _ProductState();
+  State<ProductScreen> createState() => _ProductScreenState();
 }
 
-class _ProductState extends State<Product> {
-  late Future<List<ProductModel>> _productFuture;
-
+class _ProductScreenState extends State<ProductScreen> {
   @override
   void initState() {
     super.initState();
-    _productFuture = ApiService.fetchProducts();
+    // Call provider fetch once when screen loads
+    Provider.of<ProductProvider>(context, listen: false).fetchProducts();
   }
 
   @override
@@ -45,18 +45,18 @@ class _ProductState extends State<Product> {
         ],
       ),
 
-      body: FutureBuilder<List<ProductModel>>(
-        future: _productFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+      // 🔁 Replace FutureBuilder with Consumer
+      body: Consumer<ProductProvider>(
+        builder: (context, provider, child) {
+          if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          } else if (provider.error != null) {
+            return Center(child: Text('Error: ${provider.error!}'));
+          } else if (provider.products.isEmpty) {
             return const Center(child: Text('No products found.'));
           }
 
-          final products = snapshot.data!;
+          final products = provider.products;
 
           return Padding(
             padding: const EdgeInsets.all(12),
