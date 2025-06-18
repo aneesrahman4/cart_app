@@ -113,9 +113,7 @@ class _ProductState extends State<Product> {
                         ),
                         const SizedBox(height: 4),
                         OutlinedButton(
-                          onPressed: () {
-                            // TODO: Add to cart logic here
-                          },
+                          onPressed: () {},
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFF5A78F0),
                           ),
