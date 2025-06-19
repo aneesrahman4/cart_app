@@ -1,134 +1,229 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:cart_app/providers/cart_providers.dart';
 
-// Dummy cart item model (You can replace with actual model later)
-class CartItem {
-  final String name;
-  final String price;
-  final int qty;
-
-  CartItem({required this.name, required this.price, this.qty = 1});
-}
-
-// Dummy global cart items list
-List<CartItem> cartItems = [
-  CartItem(name: 'iPhone 13', price: '50000', qty: 1),
-  CartItem(name: 'iPhone 14', price: '70000', qty: 2),
-  CartItem(name: 'iPhone 15', price: '90000', qty: 1),
-];
-
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
 
-  double calculateTotal() {
-    double total = 0;
-    for (var item in cartItems) {
-      total += double.parse(item.price) * item.qty;
-    }
-    return total;
+  @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CartProvider>(context, listen: false).fetchCart();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final totalAmount = calculateTotal();
+    final cartProvider = Provider.of<CartProvider>(context);
+    final cartItems = cartProvider.cartItems;
+
+    double total = 0;
+    for (var item in cartItems) {
+      final product = item['product'] ?? item;
+      final price = double.tryParse(product['price'].toString()) ?? 0;
+      final quantity = item['quantity'] ?? 1;
+      total += price * quantity;
+    }
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text(
-          'My Cart',
-          style: TextStyle(
-            color: Color(0xFF5A78F0),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: const Text("My Cart"),
         backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF5A78F0)),
+        foregroundColor: Colors.black,
+        elevation: 1,
       ),
       body:
-          cartItems.isEmpty
-              ? const Center(child: Text('Your cart is empty.'))
+          cartProvider.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : cartProvider.error != null
+              ? Center(
+                child: Text(
+                  cartProvider.error!,
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontSize: 16,
+                  ), // Improved visibility
+                ),
+              )
+              : cartItems.isEmpty
+              ? const Center(
+                child: Text(
+                  "🛒 Your cart is empty",
+                  style: TextStyle(fontSize: 18),
+                ),
+              )
               : Column(
                 children: [
                   Expanded(
                     child: ListView.builder(
-                      padding: const EdgeInsets.all(16),
                       itemCount: cartItems.length,
                       itemBuilder: (context, index) {
                         final item = cartItems[index];
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 6,
-                                offset: Offset(0, 3),
-                              ),
-                            ],
+                        final product = item['product'] ?? item;
+                        final cartItemId = item['_id']?.toString() ?? '';
+                        final quantity = item['quantity'] ?? 1;
+
+                        return Card(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
                           ),
-                          child: Row(
-                            children: [
-                              Container(
-                                height: 60,
-                                width: 60,
-                                decoration: BoxDecoration(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 80,
+                                  height: 80,
                                   color: Colors.grey[300],
-                                  borderRadius: BorderRadius.circular(8),
+                                  child: const Icon(Icons.image, size: 40),
                                 ),
-                                child: const Icon(Icons.image, size: 30),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item.name,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        product['name'] ?? 'No Name',
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text('₹ ${item.price}'),
-                                    Text('Qty: ${item.qty}'),
-                                  ],
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        "₹${product['price'].toString()}",
+                                        style: const TextStyle(
+                                          color: Colors.green,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          const Text("Quantity: "),
+                                          IconButton(
+                                            icon: const Icon(
+                                              Icons.remove_circle_outline,
+                                            ),
+                                            onPressed: () async {
+                                              if (cartItemId.isNotEmpty) {
+                                                if (quantity > 1) {
+                                                  await cartProvider
+                                                      .updateCartItemQuantity(
+                                                        cartItemId,
+                                                        quantity - 1,
+                                                      );
+                                                } else {
+                                                  await cartProvider
+                                                      .deleteFromCart(
+                                                        cartItemId,
+                                                      );
+                                                }
+                                              }
+                                            },
+                                          ),
+                                          Text('$quantity'),
+                                          IconButton(
+                                            icon: const Icon(
+                                              Icons.add_circle_outline,
+                                            ),
+                                            onPressed: () async {
+                                              if (cartItemId.isNotEmpty) {
+                                                await cartProvider
+                                                    .updateCartItemQuantity(
+                                                      cartItemId,
+                                                      quantity + 1,
+                                                    );
+                                              }
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          ElevatedButton(
+                                            onPressed: () async {
+                                              if (cartItemId.isNotEmpty) {
+                                                await cartProvider
+                                                    .deleteFromCart(cartItemId);
+                                              }
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  Colors.blueAccent,
+                                            ),
+                                            child: const Text(
+                                              'Remove from cart',
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              const Icon(Icons.close, color: Colors.grey),
-                            ],
+                              ],
+                            ),
                           ),
                         );
                       },
                     ),
                   ),
-                  // Total Section
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: const BoxDecoration(
-                      color: Color(0xFFF8F8F8),
-                      border: Border(top: BorderSide(color: Colors.black12)),
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(blurRadius: 4, color: Colors.black12),
+                      ],
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Text(
-                          'Total:',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Total:',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              '₹${total.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          '₹ $totalAmount',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF5A78F0),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          height: 50,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2874F0),
+                            ),
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Checkout is not implemented yet',
+                                  ),
+                                ),
+                              );
+                            },
+                            child: const Text('Place Order'),
                           ),
                         ),
                       ],

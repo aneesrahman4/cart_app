@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../routes/app_route_constants.dart';
 import 'package:cart_app/product_model/product_ model.dart';
 import '../providers/product_providers.dart';
+import 'package:cart_app/providers/cart_providers.dart';
 
 class ProductScreen extends StatefulWidget {
   const ProductScreen({super.key});
@@ -16,7 +17,6 @@ class _ProductScreenState extends State<ProductScreen> {
   @override
   void initState() {
     super.initState();
-    // Call provider fetch once when screen loads
     Provider.of<ProductProvider>(context, listen: false).fetchProducts();
   }
 
@@ -24,7 +24,6 @@ class _ProductScreenState extends State<ProductScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -44,8 +43,6 @@ class _ProductScreenState extends State<ProductScreen> {
           ),
         ],
       ),
-
-      // 🔁 Replace FutureBuilder with Consumer
       body: Consumer<ProductProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
@@ -73,11 +70,13 @@ class _ProductScreenState extends State<ProductScreen> {
 
                 return GestureDetector(
                   onTap: () {
+                    // FIX: Pass product ID to details screen
                     context.pushNamed(
                       AppRouteConstants.ProductDetailRouteName,
                       pathParameters: {
                         'name': product.name,
                         'price': product.price.toString(),
+                        'id': product.id,
                       },
                     );
                   },
@@ -113,7 +112,12 @@ class _ProductScreenState extends State<ProductScreen> {
                         ),
                         const SizedBox(height: 4),
                         OutlinedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Provider.of<CartProvider>(
+                              context,
+                              listen: false,
+                            ).addToCart(product.id, context);
+                          },
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFF5A78F0),
                           ),
