@@ -24,10 +24,10 @@ class _CartScreenState extends State<CartScreen> {
     final cartProvider = Provider.of<CartProvider>(context);
     final cartItems = cartProvider.cartItems;
 
-    // Calculate total
+    // Calculate total (no quantity support)
     double total = cartItems.fold(
       0,
-      (sum, item) => sum + (double.tryParse(item.price) ?? 0),
+      (sum, item) => sum + (double.tryParse(item.price ?? '0') ?? 0),
     );
 
     return Scaffold(
@@ -84,7 +84,7 @@ class _CartScreenState extends State<CartScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        item.name,
+                                        item.name ?? 'No Name',
                                         style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -92,7 +92,7 @@ class _CartScreenState extends State<CartScreen> {
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        "₹${item.price}",
+                                        "₹${item.price ?? '0'}",
                                         style: const TextStyle(
                                           color: Colors.green,
                                           fontSize: 14,
@@ -101,7 +101,11 @@ class _CartScreenState extends State<CartScreen> {
                                       const SizedBox(height: 8),
                                       ElevatedButton(
                                         onPressed: () {
-                                          cartProvider.deleteFromCart(item.id);
+                                          if (item.id != null) {
+                                            cartProvider.deleteFromCart(
+                                              item.id!,
+                                            );
+                                          }
                                         },
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.blueAccent,

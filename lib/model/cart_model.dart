@@ -5,17 +5,12 @@ Cart cartFromJson(String str) => Cart.fromJson(json.decode(str));
 String cartToJson(Cart data) => json.encode(data.toJson());
 
 class Cart {
-  String id;
-  String name;
-  String price;
-  int v;
+  String? id;
+  String? name;
+  String? price;
+  int? v;
 
-  Cart({
-    required this.id,
-    required this.name,
-    required this.price,
-    required this.v,
-  });
+  Cart({this.id, this.name, this.price, this.v});
 
   factory Cart.fromJson(Map<String, dynamic> json) => Cart(
     id: json["_id"],
