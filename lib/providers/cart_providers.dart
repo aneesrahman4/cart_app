@@ -1,23 +1,23 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
+import 'package:cart_app/model/cart_model.dart';
+import 'package:cart_app/services/api_services.dart';
 
 class CartProvider with ChangeNotifier {
-  final Dio _dio = Dio(
-    BaseOptions(baseUrl: 'https://cart-app-backend-3nff.onrender.com/api'),
-  );
+  List<Cart> _cartItems = [];
+  List<Cart> get cartItems => _cartItems;
 
-  List<dynamic> _cartItems = [];
   bool _isLoading = false;
-  String? _error;
-  String? _token;
-
-  List<dynamic> get cartItems => _cartItems;
   bool get isLoading => _isLoading;
+
+  String? _error;
   String? get error => _error;
+
+  String? _token;
 
   void setToken(String token) {
     _token = token;
-    _dio.options.headers['Authorization'] = 'Bearer $token';
+    ApiService().setAuthToken(token);
     notifyListeners();
   }
 
@@ -27,45 +27,44 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // Add authentication header if token exists
-      if (_token != null) {
-        _dio.options.headers['Authorization'] = 'Bearer $_token';
-      }
+      final response = await ApiService().fetchCart();
 
-      final response = await _dio.get('/cart');
-      if (response.data is List) {
-        _cartItems = response.data;
-      } else if (response.data is Map && response.data['cart'] is List) {
-        _cartItems = response.data['cart'];
-      } else if (response.data is Map && response.data['items'] is List) {
-        _cartItems = response.data['items'];
+      if (response.statusCode == 200) {
+        List<dynamic> items = [];
+
+        if (response.data is List) {
+          items = response.data;
+        } else if (response.data is Map && response.data['cart'] is List) {
+          items = response.data['cart'];
+        } else if (response.data is Map && response.data['items'] is List) {
+          items = response.data['items'];
+        }
+
+        _cartItems = items.map((item) => Cart.fromJson(item)).toList();
       } else {
-        _cartItems = [];
+        _error = 'Unexpected response: ${response.statusCode}';
       }
     } catch (e) {
-      if (e is DioException) {
-        _error =
-            'Server error: ${e.response?.statusCode} - ${e.response?.data}';
-      } else {
-        _error = 'Network error: ${e.toString()}';
-      }
+      _error = 'Failed to fetch cart: ${e.toString()}';
+      log(_error!);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-
-    _isLoading = false;
-    notifyListeners();
   }
 
   Future<void> addToCart(String productId, BuildContext context) async {
     try {
-      final response = await _dio.post(
-        '/cart/add',
-        data: {'productId': productId},
-      );
+      final response = await ApiService().addToCart(productId);
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('✅ Added to cart')));
         await fetchCart();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to add: ${response.statusMessage}')),
+        );
       }
     } catch (e) {
       ScaffoldMessenger.of(
@@ -76,40 +75,16 @@ class CartProvider with ChangeNotifier {
 
   Future<void> deleteFromCart(String cartItemId) async {
     try {
-      await _dio.delete('/cart/item/$cartItemId');
+      await ApiService().deleteFromCart(cartItemId);
       await fetchCart();
     } catch (e) {
-      if (e is DioException) {
-        _error =
-            'Delete failed: ${e.response?.statusCode} - ${e.response?.data}';
-      } else {
-        _error = 'Delete failed: ${e.toString()}';
-      }
+      _error = 'Delete failed: ${e.toString()}';
+      log(_error!);
       notifyListeners();
     }
   }
 
   Future<void> updateCartItemQuantity(String cartItemId, int quantity) async {
-    try {
-      final response = await _dio.put(
-        '/cart/item/$cartItemId',
-        data: {'quantity': quantity},
-      );
-
-      if (response.statusCode == 200) {
-        await fetchCart();
-      } else {
-        _error = 'Failed to update quantity: ${response.statusCode}';
-        notifyListeners();
-      }
-    } catch (e) {
-      if (e is DioException) {
-        _error =
-            'Update failed: ${e.response?.statusCode} - ${e.response?.data}';
-      } else {
-        _error = 'Update failed: ${e.toString()}';
-      }
-      notifyListeners();
-    }
+    log('⚠️ Quantity update skipped. Cart model does not support quantity.');
   }
 }

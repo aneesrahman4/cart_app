@@ -1,26 +1,46 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
-import 'package:cart_app/product_model/product_ model.dart';
+import 'package:cart_app/model/product_model.dart';
 
 class ApiService {
   static final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: 'https://cart-app-backend-3nff.onrender.com/api/product',
-      connectTimeout: const Duration(seconds: 20), // Increased timeout
+      baseUrl: 'https://cart-app-backend-3nff.onrender.com/api',
+      connectTimeout: const Duration(seconds: 20),
       receiveTimeout: const Duration(seconds: 20),
       sendTimeout: const Duration(seconds: 20),
     ),
   );
 
-  static Future<List<ProductModel>> fetchProducts() async {
-    try {
-      final response = await _dio.get('');
-      final List data = response.data;
-      return data.map((e) => ProductModel.fromJson(e)).toList();
-    } on DioException catch (e) {
-      throw Exception("Failed to fetch products: ${e.message}");
-    } catch (e) {
-      throw Exception("Unexpected error: $e");
-    }
+  // Product methods
+  Future<Response> fecthProducts() async {
+    return await _dio.get('/product');
+  }
+
+  // Cart methods
+  Future<Response> fetchCart() async {
+    return await _dio.get('/cart');
+  }
+
+  Future<Response> addToCart(String productId) async {
+    return await _dio.post('/cart/add', data: {'productId': productId});
+  }
+
+  Future<Response> deleteFromCart(String cartItemId) async {
+    return await _dio.delete('/cart/item/$cartItemId');
+  }
+
+  Future<Response> updateCartItemQuantity(
+    String cartItemId,
+    int quantity,
+  ) async {
+    return await _dio.put(
+      '/cart/item/$cartItemId',
+      data: {'quantity': quantity},
+    );
+  }
+
+  // Auth method
+  void setAuthToken(String token) {
+    _dio.options.headers['Authorization'] = 'Bearer $token';
   }
 }

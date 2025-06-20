@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../routes/app_route_constants.dart';
-import 'package:cart_app/product_model/product_ model.dart';
+import 'model/product_model.dart';
 import '../providers/product_providers.dart';
 import 'package:cart_app/providers/cart_providers.dart';
 
@@ -47,8 +47,6 @@ class _ProductScreenState extends State<ProductScreen> {
         builder: (context, provider, child) {
           if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
-          } else if (provider.error != null) {
-            return Center(child: Text('Error: ${provider.error!}'));
           } else if (provider.products.isEmpty) {
             return const Center(child: Text('No products found.'));
           }

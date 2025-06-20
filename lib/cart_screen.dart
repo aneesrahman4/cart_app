@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cart_app/providers/cart_providers.dart';
+import 'package:cart_app/model/cart_model.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -23,17 +24,15 @@ class _CartScreenState extends State<CartScreen> {
     final cartProvider = Provider.of<CartProvider>(context);
     final cartItems = cartProvider.cartItems;
 
-    double total = 0;
-    for (var item in cartItems) {
-      final product = item['product'] ?? item;
-      final price = double.tryParse(product['price'].toString()) ?? 0;
-      final quantity = item['quantity'] ?? 1;
-      total += price * quantity;
-    }
+    // Calculate total
+    double total = cartItems.fold(
+      0,
+      (sum, item) => sum + (double.tryParse(item.price) ?? 0),
+    );
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("My Cart"),
+        title: const Text("🛒 My Cart"),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 1,
@@ -45,16 +44,13 @@ class _CartScreenState extends State<CartScreen> {
               ? Center(
                 child: Text(
                   cartProvider.error!,
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontSize: 16,
-                  ), // Improved visibility
+                  style: const TextStyle(color: Colors.red),
                 ),
               )
               : cartItems.isEmpty
               ? const Center(
                 child: Text(
-                  "🛒 Your cart is empty",
+                  "🛍️ Your cart is empty",
                   style: TextStyle(fontSize: 18),
                 ),
               )
@@ -64,10 +60,7 @@ class _CartScreenState extends State<CartScreen> {
                     child: ListView.builder(
                       itemCount: cartItems.length,
                       itemBuilder: (context, index) {
-                        final item = cartItems[index];
-                        final product = item['product'] ?? item;
-                        final cartItemId = item['_id']?.toString() ?? '';
-                        final quantity = item['quantity'] ?? 1;
+                        final Cart item = cartItems[index];
 
                         return Card(
                           margin: const EdgeInsets.symmetric(
@@ -91,7 +84,7 @@ class _CartScreenState extends State<CartScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        product['name'] ?? 'No Name',
+                                        item.name,
                                         style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
@@ -99,73 +92,21 @@ class _CartScreenState extends State<CartScreen> {
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        "₹${product['price'].toString()}",
+                                        "₹${item.price}",
                                         style: const TextStyle(
                                           color: Colors.green,
                                           fontSize: 14,
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          const Text("Quantity: "),
-                                          IconButton(
-                                            icon: const Icon(
-                                              Icons.remove_circle_outline,
-                                            ),
-                                            onPressed: () async {
-                                              if (cartItemId.isNotEmpty) {
-                                                if (quantity > 1) {
-                                                  await cartProvider
-                                                      .updateCartItemQuantity(
-                                                        cartItemId,
-                                                        quantity - 1,
-                                                      );
-                                                } else {
-                                                  await cartProvider
-                                                      .deleteFromCart(
-                                                        cartItemId,
-                                                      );
-                                                }
-                                              }
-                                            },
-                                          ),
-                                          Text('$quantity'),
-                                          IconButton(
-                                            icon: const Icon(
-                                              Icons.add_circle_outline,
-                                            ),
-                                            onPressed: () async {
-                                              if (cartItemId.isNotEmpty) {
-                                                await cartProvider
-                                                    .updateCartItemQuantity(
-                                                      cartItemId,
-                                                      quantity + 1,
-                                                    );
-                                              }
-                                            },
-                                          ),
-                                        ],
-                                      ),
                                       const SizedBox(height: 8),
-                                      Row(
-                                        children: [
-                                          ElevatedButton(
-                                            onPressed: () async {
-                                              if (cartItemId.isNotEmpty) {
-                                                await cartProvider
-                                                    .deleteFromCart(cartItemId);
-                                              }
-                                            },
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor:
-                                                  Colors.blueAccent,
-                                            ),
-                                            child: const Text(
-                                              'Remove from cart',
-                                            ),
-                                          ),
-                                        ],
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          cartProvider.deleteFromCart(item.id);
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.blueAccent,
+                                        ),
+                                        child: const Text('Remove from cart'),
                                       ),
                                     ],
                                   ),
@@ -182,11 +123,14 @@ class _CartScreenState extends State<CartScreen> {
                     decoration: const BoxDecoration(
                       color: Colors.white,
                       boxShadow: [
-                        BoxShadow(blurRadius: 4, color: Colors.black12),
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 4,
+                          offset: Offset(0, -2),
+                        ),
                       ],
                     ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -209,6 +153,7 @@ class _CartScreenState extends State<CartScreen> {
                         ),
                         const SizedBox(height: 12),
                         SizedBox(
+                          width: double.infinity,
                           height: 50,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
@@ -217,13 +162,14 @@ class _CartScreenState extends State<CartScreen> {
                             onPressed: () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text(
-                                    'Checkout is not implemented yet',
-                                  ),
+                                  content: Text('Checkout not implemented yet'),
                                 ),
                               );
                             },
-                            child: const Text('Place Order'),
+                            child: const Text(
+                              'Place Order',
+                              style: TextStyle(fontSize: 16),
+                            ),
                           ),
                         ),
                       ],

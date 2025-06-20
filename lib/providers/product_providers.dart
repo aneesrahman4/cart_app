@@ -1,33 +1,31 @@
+import 'dart:developer';
+
+import 'package:cart_app/model/product_model.dart';
+import 'package:cart_app/services/api_services.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:cart_app/product_model/product_ model.dart';
 
 class ProductProvider extends ChangeNotifier {
-  final Dio _dio = Dio();
-  List<ProductModel> _products = [];
-  bool _isLoading = false;
-  String? _error;
+  List<Product> _products = [];
+  List<Product> get products => _products;
 
-  List<ProductModel> get products => _products;
+  bool _isLoading = true;
   bool get isLoading => _isLoading;
-  String? get error => _error;
-
   Future<void> fetchProducts() async {
     _isLoading = true;
-    _error = null;
-    notifyListeners();
-
     try {
-      final response = await _dio.get(
-        'https://cart-app-backend-3nff.onrender.com/api/product',
-      );
-      _products =
-          (response.data as List).map((e) => ProductModel.fromJson(e)).toList();
+      final response = await ApiService().fecthProducts();
+      if (response.statusCode == 200)
+        _products =
+            (response.data as List<dynamic>)
+                .map((result) => Product.fromJson(result))
+                .toList();
     } catch (e) {
-      _error = 'Something went wrong';
+      log(e.toString());
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-
-    _isLoading = false;
-    notifyListeners();
   }
 }
