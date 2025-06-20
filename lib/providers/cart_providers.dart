@@ -53,23 +53,18 @@ class CartProvider with ChangeNotifier {
     }
   }
 
-  Future<void> addToCart(String productId, BuildContext context) async {
+  Future<void> addToCart(String productId) async {
     try {
       final response = await ApiService().addToCart(productId);
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('✅ Added to cart')));
         await fetchCart();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add: ${response.statusMessage}')),
-        );
+        _error = 'Failed to add: ${response.statusMessage}';
+        log(_error!);
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('❌ Failed to add to cart')));
+      _error = '❌ Failed to add to cart: ${e.toString()}';
+      log(_error!);
     }
   }
 

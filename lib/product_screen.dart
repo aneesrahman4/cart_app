@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../routes/app_route_constants.dart';
-import 'model/product_model.dart';
+import '../model/product_model.dart';
 import '../providers/product_providers.dart';
-import 'package:cart_app/providers/cart_providers.dart';
+import '../providers/cart_providers.dart';
 
 class ProductScreen extends StatefulWidget {
   const ProductScreen({super.key});
@@ -68,7 +68,6 @@ class _ProductScreenState extends State<ProductScreen> {
 
                 return GestureDetector(
                   onTap: () {
-                    // FIX: Pass product ID to details screen
                     context.pushNamed(
                       AppRouteConstants.ProductDetailRouteName,
                       pathParameters: {
@@ -110,11 +109,27 @@ class _ProductScreenState extends State<ProductScreen> {
                         ),
                         const SizedBox(height: 4),
                         OutlinedButton(
-                          onPressed: () {
-                            Provider.of<CartProvider>(
+                          onPressed: () async {
+                            final cartProvider = Provider.of<CartProvider>(
                               context,
                               listen: false,
-                            ).addToCart(product.id, context);
+                            );
+
+                            await cartProvider.addToCart(product.id);
+
+                            if (cartProvider.error == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('✅ Added to cart'),
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('❌ ${cartProvider.error}'),
+                                ),
+                              );
+                            }
                           },
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFF5A78F0),
